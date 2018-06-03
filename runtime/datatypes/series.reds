@@ -21,8 +21,8 @@ _series: context [
 			offset [integer!]
 	][
 		s: GET_BUFFER(ser)
-		offset: ser/head << (log-b GET_UNIT(s))
-		(as byte-ptr! s/offset) + offset >= as byte-ptr! s/tail
+		offset: ser/head << (log-b GET_UNIT(s)) ;- 左移是乘以元素大小，得到当前 head 占用的大小
+		(as byte-ptr! s/offset) + offset >= as byte-ptr! s/tail ;- 加上基地址对比 tail 就知道是否已到底
 	]
 
 	rs-skip: func [
@@ -35,10 +35,11 @@ _series: context [
 	][
 		assert len >= 0
 		s: GET_BUFFER(ser)
-		offset: ser/head + len << (log-b GET_UNIT(s))
+		offset: ser/head + len << (log-b GET_UNIT(s)) ;- 当前 (head + len) * 元素大小
 
 		if (as byte-ptr! s/offset) + offset <= as byte-ptr! s/tail [
-			ser/head: ser/head + len
+			ser/head: ser/head + len ;- 如果超过就不会重置 head，返回 false 表明失败？
+            ;- 那这里不需要判断两次，存在局部变量更好。但是这个函数只被 next 调用，最终总会 = tail，即 head 指向 tail
 		]
 		(as byte-ptr! s/offset) + offset >= as byte-ptr! s/tail
 	]
@@ -56,17 +57,19 @@ _series: context [
 		#if debug? = yes [if verbose > 0 [print-line "series/get-position"]]
 
 		ser: as red-series! stack/arguments
-		index: as red-integer! ser + 1
+		index: as red-integer! ser + 1 ;- ser + 1 其实等价于 stack/arguments + 1 来取到第二个参数，看编译出来的栈指令 push 了 index
 
 		assert TYPE_OF(index) = TYPE_INTEGER
 
 		s: GET_BUFFER(ser)
 
-		if all [base = 1 index/value <= 0][base: base - 1]
-		offset: ser/head + index/value - base			;-- index is one-based
-		if negative? offset [offset: 0]
-		width: (as-integer s/tail - s/offset) >> (log-b GET_UNIT(s))
-		if offset > width [offset: width]
+        ;- base 的用处：at [1 2 3] 1 = [1 2 3] 而 skip [1 2 3] 1 = [2 3]
+
+		if all [base = 1 index/value <= 0][base: base - 1] ;- base = 1 只有 at 函数使用，此时若 index 为负值则强制 base 为 0
+		offset: ser/head + index/value - base			;-- index is one-based ;- 偏移后的下标
+		if negative? offset [offset: 0] ;- 强制为 0，试下 at [1 2 3] -3 = [1 2 3]
+		width: (as-integer s/tail - s/offset) >> (log-b GET_UNIT(s)) ;- 右移是除以元素大小，得到元素个数
+		if offset > width [offset: width] ;- 同上，如果超过元素个数则返回 tail 即空，试下 at [1 2 3] 5 = [ ]
 		offset
 	]
 
@@ -82,7 +85,7 @@ _series: context [
 		s: GET_BUFFER(ser)
 		offset: either absolute? [0][ser/head]
 		if negative? offset [offset: 0]					;-- @@ beware of symbol/index leaking here...
-		width: (as-integer s/tail - s/offset) >> (log-b GET_UNIT(s))
+		width: (as-integer s/tail - s/offset) >> (log-b GET_UNIT(s)) ;- 右移是除以元素大小，得到元素个数
 		either offset > width [ser/head: width 0][width - offset] ;-- past-end index adjustment
 	]
 
@@ -247,7 +250,7 @@ _series: context [
 		#if debug? = yes [if verbose > 0 [print-line "series/at"]]
 
 		ser: as red-series! stack/arguments
-		ser/head: get-position 1
+		ser/head: get-position 1 ;- at [1 2 3] 1 = [1 2 3]
 		as red-value! ser
 	]
 
@@ -280,7 +283,7 @@ _series: context [
 		#if debug? = yes [if verbose > 0 [print-line "series/skip"]]
 
 		ser: as red-series! stack/arguments
-		ser/head: get-position 0
+		ser/head: get-position 0 ;- skip [1 2 3] 1 = [2 3]
 		as red-value! ser
 	]
 
