@@ -1,0 +1,155 @@
+digraph g {
+    label = "\n【内存图1】 memory 变量与各种结构体";
+
+    fontname = "Verdana";
+    fontsize = 10;
+    rankdir = LR; 
+
+    node [shape="record", width=.1, height=.1];
+    node [fontsize=12, color="skyblue", shape="record"];  
+    edge [fontsize=10, color="crimson", style="solid"];
+    node [shape="plaintext"];
+
+    # http://sandbox.kidstrythisathome.com/erdos/
+    # https://dreampuf.github.io/GraphvizOnline/
+
+    # http://icodeit.org/2015/11/using-graphviz-drawing/
+    # https://casatwy.com/shi-yong-dotyu-yan-he-graphvizhui-tu-fan-yi.html
+    # http://itopic.org/graphviz.html
+
+    # https://graphviz.gitlab.io/_pages/doc/info/shapes.html#html
+    # https://graphviz.gitlab.io/_pages/doc/info/colors.html
+
+    memory [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left" TOOLTIP="memory">
+                <tr><td BGCOLOR="greenyellow"><b>memory</b></td></tr>
+                <tr><td port="f1">total</td></tr>
+                <tr><td port="f2" BGCOLOR="lightblue1">n-head<br ALIGN="CENTER"/><font point-size="10" color="red">[node-frame!]</font></td></tr>
+                <tr><td port="f3" BGCOLOR="lightblue1">n-active<br ALIGN="CENTER"/><font point-size="10" color="red">[node-frame!]</font></td></tr>
+                <tr><td port="f4" BGCOLOR="lightblue1">n-tail<br ALIGN="CENTER"/><font point-size="10" color="red">[node-frame!]</font></td></tr>
+                <tr><td port="f5" BGCOLOR="palegreen">s-head<br ALIGN="CENTER"/><font point-size="10" color="red">[series-frame!]</font></td></tr>
+                <tr><td port="f6" BGCOLOR="palegreen">s-active<br ALIGN="CENTER"/><font point-size="10" color="red">[series-frame!]</font></td></tr>
+                <tr><td port="f7" BGCOLOR="palegreen">s-tail<br ALIGN="CENTER"/><font point-size="10" color="red">[series-frame!]</font></td></tr>
+                <tr><td port="f8">s-start: 512KB<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f9">s-size: 512KB * 2<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f10">s-max: 2MB<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f11" BGCOLOR="lightblue1">b-head<br ALIGN="CENTER"/><font point-size="10" color="red">[big-frame!]</font></td></tr>
+            </table>
+        >
+    ];
+
+    "node-frame!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="skyblue"><b>node-frame!</b></td></tr>
+                <tr><td port="f1">next</td></tr>
+                <tr><td port="f2">prev</td></tr>
+                <tr><td port="f3">nodes: 5000<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f4">buttom</td></tr>
+                <tr><td port="f5">top</td></tr>
+                <tr><td port="p1" BGCOLOR="lightblue1">ptr-1</td></tr>
+                <tr><td port="p2" BGCOLOR="lightblue1">...</td></tr>
+                <tr><td port="p3" BGCOLOR="lightblue1">ptr-5000</td></tr>
+                <tr><td port="n1" BGCOLOR="palegreen">node-1</td></tr>
+                <tr><td port="n2" BGCOLOR="palegreen">...</td></tr>
+                <tr><td port="n3" BGCOLOR="palegreen">node-5000</td></tr>
+            </table>
+        >
+    ];
+    "node-frame!":f4:w -> "node-frame!":p1:w [color=blue];
+    "node-frame!":p1:e -> "node-frame!":n1:e [color=blue];
+    "node-frame!":f5:w -> "node-frame!":p3:w [color=gold3];
+    "node-frame!":p3:e -> "node-frame!":n3:e [color=gold3];
+
+    memory:f2 -> "node-frame!":f1 [label="the head node-frame!"];
+    memory:f3 -> "node-frame!":f1;
+    memory:f4 -> "node-frame!":f1;
+    memory:f5 -> "series-frame!":f1;
+    memory:f6 -> "series-frame!":f1;
+    memory:f7 -> "series-frame!":f1;    
+
+
+    "next-node-frame!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="skyblue"><b>node-frame!</b></td></tr>
+                <tr><td port="f1">next</td></tr>
+                <tr><td port="f2">prev</td></tr>
+                <tr><td port="f3">nodes</td></tr>
+                <tr><td port="f4">buttom</td></tr>
+                <tr><td port="f5">top</td></tr>
+                <tr><td port="n1" BGCOLOR="palegreen">node-1</td></tr>
+                <tr><td port="n2" BGCOLOR="palegreen">...</td></tr>
+                <tr><td port="n3" BGCOLOR="palegreen">node-10000</td></tr>
+            </table>
+        >
+    ];
+    "next-node-frame!":f4:e -> "next-node-frame!":n1:e [color=blue, label="Why not like this??"];
+    "next-node-frame!":f5:e -> "next-node-frame!":n3:e [color=gold3];
+
+
+    "series-frame!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="skyblue"><b>series-frame!</b></td></tr>
+                <tr><td port="f1">next</td></tr>
+                <tr><td port="f2">prev</td></tr>
+                <tr><td port="f3">heap<br ALIGN="CENTER"/><font point-size="10" color="red">[series-buffer!]</font></td></tr>
+                <tr><td port="f4">tail<br ALIGN="CENTER"/><font point-size="10" color="red">[byte-ptr!]</font></td></tr>
+                <tr><td port="b1" BGCOLOR="palegreen">buf-1</td></tr>
+                <tr><td port="b2" BGCOLOR="palegreen">...</td></tr>
+                <tr><td port="b3" BGCOLOR="palegreen">buf-N</td></tr>
+            </table>
+        >
+    ];
+    "series-frame!":f3:w -> "series-frame!":b1:w [color=blue];
+    "series-frame!":f4:w -> "series-frame!":b3:w [color=gold3];
+    "series-frame!":b1:e -> "series-buffer!":f1:w [color=blue style=dashed];
+    "series-frame!":b3:e -> "series-buffer!":f1:w [color=gold3 style=dashed];
+
+
+    "series-buffer!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="skyblue"><b>series-buffer!</b></td></tr>
+                <tr><td port="f1">flags<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f2">node<br ALIGN="CENTER"/><font point-size="10" color="red">[int-ptr!]</font></td></tr>
+                <tr><td port="f3">size<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f4">offset<br ALIGN="CENTER"/><font point-size="10" color="red">[cell!]</font></td></tr>
+                <tr><td port="f5">tail<br ALIGN="CENTER"/><font point-size="10" color="red">[cell!]</font></td></tr>
+            </table>
+        >
+    ];
+
+    "cell!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="skyblue"><b>cell!</b></td></tr>
+                <tr><td port="f1">header<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f2">data1<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f3">data2<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f4">data3<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+            </table>
+        >
+    ];
+
+    "node-frame!":f1:e -> "next-node-frame!":f1:w [style=dashed];
+    "next-node-frame!":f2:w -> "node-frame!":f1:e [style=dashed];
+
+    "series-buffer!":f4 -> "cell!": f1 [style=dashed];
+    "series-buffer!":f5 -> "cell!": f1 [style=dashed];
+
+    "big-frame!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="skyblue"><b>big-frame!</b></td></tr>
+                <tr><td port="f1">flags<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f2">next<br ALIGN="CENTER"/><font point-size="10" color="red">[big-frame!]</font></td></tr>
+                <tr><td port="f3">size<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f4">padding<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+            </table>
+        >
+    ];
+    memory:f11 -> "big-frame!":f1 [style=dashed];
+}

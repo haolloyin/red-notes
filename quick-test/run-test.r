@@ -20,7 +20,7 @@ print rejoin ["Running under REBOL " system/version]
 ;; get the name of the test file & any other args
 args: parse system/script/args " "
 src: last args
-if find system/script/args "--binary" [qt/binary-compiler?: true]
+if find system/script/args "--binary" [qt/binary?: true]
 all [
 	2 < length? args 
 	src <> temp: select args "--binary"
@@ -43,7 +43,6 @@ either any [
 	][                     
 		--compile-run-print src
 	][
-		
 		either find read qt/tests-dir/:src "quick-unit-test.r" [
 			--run-unit-test src
 		][
@@ -54,3 +53,4 @@ either any [
 ]
 
 prin ""
+

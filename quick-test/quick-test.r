@@ -2,10 +2,10 @@ REBOL [
   Title:   "Simple testing framework for Red and Red/System programs"
 	Author:  "Peter W A Wood"
 	File: 	 %quick-test.r
-	Version: 0.12.0
+	Version: 0.11.0
 	Tabs:	 4
-	Rights:  "Copyright (C) 2011-2015 Peter W A Wood. All rights reserved."
-	License: "BSD-3 - https://github.com/red/red/blob/master/BSD-3-License.txt"
+	Rights:  "Copyright (C) 2011-2012 Peter W A Wood. All rights reserved."
+	License: "BSD-3 - https://github.com/dockimbel/Red/blob/master/BSD-3-License.txt"
 ]
 
 comment {
@@ -13,7 +13,7 @@ comment {
 	files are stored. They are:
     	this script is stored in Red/quick-test/
     	the Red & Red/System compiler is stored in Red/
-    	the default dir for tests is Red/system/tests/
+    	the default dir for tests is Red/red-system/tests/
     	
     	The default test dirs can be overriden by setting qt/tests-dir before
     	tests are processed
@@ -30,24 +30,15 @@ qt: make object! [
   base-dir: system/script/path
   base-dir: copy/part base-dir find base-dir "quick-test"
   ;; set the red/system runnable dir
-  runnable-dir: dirize base-dir/quick-test/runnable
+  runnable-dir: base-dir/quick-test/runnable
   ;; set the default base dir for tests
-  tests-dir: dirize base-dir/system/tests
+  tests-dir: base-dir/red-system/tests
   
   ;; set the version number
   version: system/script/header/version
   
   ;; switch for binary compiler usage
-  binary-compiler?: false
-
-  ;; check if call-show? is enabled for call
-  either any [
-  		not value? 'call-show?
-  		equal? call-show? 'wait
-  	] [call-show?: 'wait] [call-show?: 'show]
-  call*: to path! 'call
-  append call* :call-show?
-  append call* 'output
+  binary?: false
   
   ;; default binary compiler path
   bin-compiler: base-dir/build/bin/red
@@ -73,9 +64,9 @@ qt: make object! [
   ;; use Cheyenne call with REBOL v2.7.8 on Windows (re: 'call bug on Windows 7)
   if all [
     windows-os?
-    system/version/3 = 8
+    system/version/3 = 8              
   ][
-		do %../utils/call.r
+		do %call.r					               
 		set 'call :win-call
 	]
 	
@@ -102,7 +93,7 @@ qt: make object! [
                                        ;; false = runnning test script
 				  
 
-  summary-template: ".. - .................................................. / "
+  summary-template: ".. - .................................... / "
   
   data: make object! [
     title: copy ""
@@ -160,7 +151,7 @@ qt: make object! [
     append print-output join "" [reduce val "^/"]
   ]
         
-  compile: func [
+  	compile: func [
   		src [file!]
   		/bin
   		/lib
@@ -199,14 +190,14 @@ qt: make object! [
     ;; red/system or red
     red?: false
     parse read src red?-rule
- 
+
     ;; compose and write compilation script
-    either binary-compiler? [
+    either binary? [
     	if #"/" <> first src [src: tests-dir/:src]     ;; relative path supplied
     	either lib [
     		cmd: join "" [to-local-file bin-compiler " -o " 
     					  to-local-file runnable-dir/:exe
-    					  " -dlib -t " target " "
+    					  " -dlib -t " target
     					  to-local-file src
     		]
     	][
@@ -216,7 +207,7 @@ qt: make object! [
     		]  		
     	]
     	comp-output: make string! 1024
-    	do call* cmd comp-output
+    	call/wait/output cmd comp-output
     ][
     	comp: mold compose/deep [
     	  REBOL []
@@ -225,7 +216,6 @@ qt: make object! [
     	  do/args (reduce base-dir/red.r) (join " -o " [
     	  	  	  reduce runnable-dir/:exe " ###lib###***src***" 
     	  ])
-    	  echo none
     	]
     	either lib [
     		replace comp "###lib###" join "-dlib -t " [target " "]
@@ -238,7 +228,7 @@ qt: make object! [
 
     	;; compose command line and call it
     	cmd: join to-local-file system/options/boot [" -sc " comp-r]
-    	do call* cmd make string! 1024	;; redirect output to anonymous
+    	call/wait/output cmd make string! 1024	;; redirect output to anonymous
     											;; buffer
     ]
     
@@ -248,7 +238,6 @@ qt: make object! [
     	delete comp-echo
     ]
     if exists? comp-r [delete comp-r]
-    recycle
     either compile-ok? [
       exe
     ][
@@ -295,7 +284,7 @@ qt: make object! [
     /local
     	dll
   ][
-    ;; compile the lib into the runnable dir
+    ;; compile the lib and copy the executable to the runnable dir
     if not dll: compile/lib lib-src target [
       compile-error lib-src
       output: "Lib compilation failed"  
@@ -316,10 +305,8 @@ qt: make object! [
   compile-error: func [
     src [file! string!]
   ][
-    print join "^/" [src " - compiler error^/"]
-    print comp-output
-    print newline
-    clear output                           ;; clear the output from previous test
+    print join "" [src " - compiler error"]
+    clear output                           ;; clear the ouptut from previous test
     _signify-failure
   ]
   
@@ -356,9 +343,8 @@ qt: make object! [
     exec: to-local-file runnable-dir/:prog
     ;;exec: join "" compose/deep [(exec either args [join " " parms] [""])]
     clear output
-    do call* exec output
-    ;;if all [red? windows-os?] [output: qt/utf-16le-to-utf-8 output]
-    recycle
+    call/output/wait exec output
+    if all [red? windows-os?] [output: qt/utf-16le-to-utf-8 output]
     if all [
       source-file?
       not pgm
@@ -379,11 +365,11 @@ qt: make object! [
     src [file!]
     /local               
       cmd                             ;; command to run
-      output
       test-name                     
   ][
     source-file?: false
-    do join tests-dir src
+    cmd: join to-local-file system/options/boot [" -sc " tests-dir src]
+    call/wait cmd
   ]
   
   run-unit-test-quiet: func [
@@ -392,15 +378,13 @@ qt: make object! [
       cmd                             ;; command to run
       test-name                     
   ][
-    file/reset
     source-file?: false
     test-name: find/last/tail src "/"
     test-name: copy/part test-name find test-name "."
     prin [ "running " test-name #"^(0D)"]
     clear output
     cmd: join to-local-file system/options/boot [" -sc " tests-dir src]
-    do call* cmd output
-    if find output "Error:" [_signify-failure]
+    call/output/wait cmd output
     add-to-run-totals
     write/append log-file output
     file/title: test-name
@@ -410,14 +394,15 @@ qt: make object! [
   
   run-script: func [
     src [file!]
-    /local
+    /local 
      filename                     ;; filename of script 
      script                       ;; %runnable/filename
   ][
     if not filename: copy find/last/tail src "/" [filename: copy src]
     script: runnable-dir/:filename
     write to file! script read join tests-dir [src]
-    if error? try [do script] [_signify-failure]
+    print ["script" script]
+    do script
   ]
   
   run-script-quiet: func [
@@ -437,9 +422,8 @@ qt: make object! [
   	src [file!]
   ][
     file/reset
-    unless file/title: find/last/tail to string! src "/" [file/title: src]
+    file/title: find/last/tail to string! src "/"
     replace file/title "-test.reds" ""
-    replace file/title "-test.red" ""
     compile-run-print src
     add-to-run-totals
   ]
@@ -514,7 +498,7 @@ qt: make object! [
       ][
     _start test-run "" title
     prin newline
-    write log-file rejoin ["***Starting*** " title newline]
+    write log-file rejoin ["***Starting***" title newline]
   ]
   
   start-file: func [
@@ -631,7 +615,7 @@ qt: make object! [
   
   make-if-needed?: func [
     {This function is used by the Red run-all scripts to build the auto files
-     when necessary.} 
+     when necessary. It is not } 
     auto-test-file [file!]
     make-file [file!]
     /lib-test
@@ -667,36 +651,6 @@ qt: make object! [
       print ["Making" auto-test-file " - it will take a while"]
       do make-file
     ]
-  ]
-  
-  setup-temp-files: func [
-  	  /local
-  	  	f
-  ][
-  	foreach file read runnable-dir [attempt [delete runnable-dir/:file]]
-  	
-  	f: to string! now/time/precise
-  	f: replace/all f ":" ""
-  	f: replace/all f "." ""
-    comp-echo: join runnable-dir ["comp-echo" f ".txt"]
-  	comp-r: join runnable-dir ["comp" f ".r"]
-  	test-src-file: join runnable-dir ["qt-test-comp" f ".red"]
-  ]
-  
-  delete-temp-files: does [
-  	  if exists? comp-echo [delete comp-echo]
-  	  if exists? comp-r [delete comp-r]
-  	  if exists? test-src-file [delete test-src-file]  
-  ]
-  
-  seperate-log-file: func [
-  	  /local
-  	  	f
-  ][
-  	f: to string! now/time/precise
-  	f: replace/all f ":" ""
-  	f: replace/all f "." ""
-    log-file: join base-dir ["quick-test/quick-test" f ".log"]
   ]
   
   utf-16le-to-utf-8: func [
@@ -778,7 +732,4 @@ qt: make object! [
   set '~~~end-file~~~               :end-file
   set '***end-run***                :end-test-run
   set '***end-run-quiet***          :end-test-run-quiet
-  set '--setup-temp-files			:setup-temp-files
-  set '--delete-temp-files			:delete-temp-files
-  set '--seperate-log-file			:seperate-log-file	
 ]

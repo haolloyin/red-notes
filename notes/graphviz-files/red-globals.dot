@@ -1,0 +1,122 @@
+digraph g {    
+    fontname = "Verdana";
+    fontsize = 10;
+    rankdir = LR; 
+
+    node [shape="record", width=.1, height=.1];
+    node [fontsize=12, color="skyblue", shape="record"];  
+    edge [fontsize=10, color="crimson", style="solid"];
+    node [shape="plaintext"];
+
+    _root [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left" TOOLTIP="_root">
+                <tr><td BGCOLOR="greenyellow">_root<br ALIGN="CENTER"/><font point-size="10" color="red">[red-block!]</font></td></tr>
+                <tr><td port="f1">header<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f2">head<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f3">node<br ALIGN="CENTER"/><font point-size="10" color="red">[node!]</font></td></tr>
+                <tr><td port="f4">extra<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+            </table>
+        >
+    ];
+    "series-buffer!":f2:w -> "node-frame!":n4:e [color=blue, fontcolor=blue, label="Step 1"];
+    "node-frame!":n4:e -> "series-buffer!":f1:e [color=black, label="Step 2"];
+    _root:f3:e -> "node-frame!":n4:w [color=black, label="Step 3"];
+    "node-frame!":f5:w -> "node-frame!":p2:w [color=deepskyblue, fontcolor=deepskyblue, label="Step 4，栈顶\n已经分配给 _root"];
+
+    "cell!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="skyblue"><b>cell!</b></td></tr>
+                <tr><td port="f1">header<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f2">data1<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f3">data2<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f4">data3<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+            </table>
+        >
+    ];
+
+
+    #----------- name-table 
+    "name-table" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td BGCOLOR="greenyellow"><b>name-table</b><br align="center"/><font point-size="10" color="red">50 [names!]</font></td></tr>
+                <tr><td port="f1"><font point-size="12">TYPE_VALUE(0)</font></td></tr>
+                <tr><td port="f2"><font point-size="12">TYPE_DATATYPE(1)</font></td></tr>
+                <tr><td port="f3">...</td></tr>
+                <tr><td port="f4"><font point-size="12">TYPE_BLOCK(5)</font></td></tr>
+                <tr><td port="f7">...</td></tr>
+                <tr><td port="f8"><font point-size="12">50</font></td></tr>
+            </table>
+        >
+    ];
+
+    "names!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td port="f0" BGCOLOR="skyblue"><b>names!</b></td></tr>
+                <tr><td port="f1">buffer: "datatype"<br ALIGN="CENTER"/><font point-size="10" color="red">[c-string!]</font></td></tr>
+                <tr><td port="f2">size: 8<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f3">word<br ALIGN="CENTER"/><font point-size="10" color="red">[red-word!]</font></td></tr>
+            </table>
+        >
+    ];
+
+    "red-word!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td port="f0" BGCOLOR="skyblue"><b>red-word!</b></td></tr>
+                <tr><td port="f1">heeder<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f2">ctx<br ALIGN="CENTER"/><font point-size="10" color="red">[red-context!]</font></td></tr>
+                <tr><td port="f3">symbol<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f3">index<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+            </table>
+        >
+    ];
+
+    "red-context!" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td port="f0" BGCOLOR="skyblue"><b>red-context!</b></td></tr>
+                <tr><td port="f1">heeder<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f2">symbols<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f3">values<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+                <tr><td port="f3">_pad<br ALIGN="CENTER"/><font point-size="10" color="red">[integer!]</font></td></tr>
+            </table>
+        >
+    ];
+
+    "name-table":f2 -> "names!":f1;
+    "names!":f3 -> "red-word!":f1;
+    "red-word!":f2 -> "red-context!":f1;
+
+   
+    "action-table" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td port="f0" BGCOLOR="greenyellow"><b>action-table</b><br align="center"/><font point-size="10" color="red">[pointer! [integer!]]</font></td></tr>
+                <tr><td port="f1">257: 0</td></tr>
+                <tr><td port="f2">1318: xxxx</td></tr>
+                <tr><td port="f3">...</td></tr>                
+            </table>
+        >
+    ];
+
+    "name-table":f2 -> "action-table":f1 [color=Blue, style=dashed, label="teyp(1) << 8 + 1 ==> 257"];
+    "name-table":f4 -> "action-table":f2 [color=Blue, style=dashed, label="type(5) << 8 + 38 ==> 1318"];
+
+
+    #----------- actions/table
+    "actions/table" [
+        label = <
+            <table border="0" cellborder="1" cellspacing="0" align="left">
+                <tr><td port="f0" BGCOLOR="greenyellow"><b>actions/table</b><br align="center"/><font point-size="10" color="red">62 [int-ptr!]</font></td></tr>
+                <tr><td port="f1">1: action addr</td></tr>
+                <tr><td port="f2">2: action addr</td></tr>
+                <tr><td port="f3">...</td></tr>
+                <tr><td port="f4">ACTIONS_NB(62): action addr</td></tr>
+            </table>
+        >
+    ];
+}

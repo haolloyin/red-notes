@@ -1,0 +1,308 @@
+
+
+----- comp-source 的 funtions
+item: make
+item: [action! 2 [{Returns a new value made from a spec for that value's type.} type [any-type!] "The datatype or a prototype value." spec [any-type!] "The specification^-of the new value." return: [any-type!] "Returns the specified datatype."] none]
+item: reflect
+item: [action! 2 [{Returns internal details about a value via reflection.} value [any-type!] field [word!] {spec, body, words, etc. Each datatype defines its own reflectors}] none]
+item: form
+item: [action! 1 [{Returns a user-friendly string representation of a value.} value [any-type!] /part "Limit the length of the result" limit [integer!] return: [string!]] [/part 1 1]]
+item: mold
+item: [action! 1 [{Returns a source format string representation of a value.} value [any-type!] /only "Exclude outer brackets if value is a block" /all "TBD: Return value in loadable format" /flat "TBD: Exclude all indentation" /part "Limit the length of the result" limit [integer!] return: [string!]] [/only 1 0 /all 2 0 /flat 3 0 /part 4 1]]
+item: absolute
+item: [action! 1 ["Returns the non-negative value." value [number!] return: [number!]] none]
+item: add
+item: [action! 2 ["Returns the sum of the two values." value1 [number!] value2 [number!] return: [number!]] none]
+item: divide
+item: [action! 2 ["Returns the quotient of two values." value1 [number!] "The dividend (numerator)." value2 [number!] "The divisor (denominator)." return: [number!]] none]
+item: multiply
+item: [action! 2 ["Returns the product of two values." value1 [number!] value2 [number!] return: [number!]] none]
+item: negate
+item: [action! 1 ["Returns the opposite (additive inverse) value." number [number!] return: [number!]] none]
+item: power
+item: [action! 2 [{Returns a number raised to a given power (exponent).} number [number!] "Base value." exponent [number!] "The power (index) to raise the base value by." return: [number!]] none]
+item: remainder
+item: [action! 2 [{Returns what is left over when one value is divided by another.} value1 [number!] value2 [number!] return: [number!]] none]
+item: round
+item: [action! 1 [{TBD: Returns the nearest integer. Halves round up (away from zero) by default.} n [number!] /to "Return the nearest multiple of the scale parameter" scale [number!] "Must be a non-zero value" /even "Halves round toward even results" /down {Round toward zero, ignoring discarded digits. (truncate)} /half-down "Halves round toward zero" /floor "Round in negative direction" /ceiling "Round in positive direction" /half-ceiling "Halves round in positive direction"] [/to 1 1 /even 2 0 /down 3 0 /half-down 4 0 /floor 5 0 /ceiling 6 0 /half-ceiling
+ 7 0]]
+item: subtract
+item: [action! 2 ["Returns the difference between two values." value1 [number!] value2 [number!] return: [number!]] none]
+item: even?
+item: [action! 1 [{Returns true if the number is evenly divisible by 2.} number [number!] return: [number!]] none]
+item: odd?
+item: [action! 1 [{Returns true if the number has a remainder of 1 when divided by 2.} number [number!] return: [number!]] none]
+item: append
+item: [action! 2 [{Inserts value(s) at series tail; returns series head.} series [series!] value [any-type!] /part "Limit the number of values inserted" length [number! series!] /only {Ins
+ert block types as single values (overrides /part)} /dup "Duplicate the inserted values" count [number!] return: [series!]] [/part 1 1 /only 2 0 /dup 3 1]]
+item: at
+item: [action! 2 ["Returns a series at a given index." series [series!] index [integer!] return: [series!]] none]
+item: back
+item: [action! 1 ["Returns a series at the previous index." series [series!] return: [series!]] none]
+item: clear
+item: [action! 1 [{Removes series values from current index to tail; returns new tail.} series [series!] return: [series!]] none]
+item: copy
+item: [action! 1 ["Returns a copy of a non-scalar value." value [series!] /part "Limit the length of the result" length [number! series!] /deep "Copy nested values" /types "Copy only speci
+fic types of non-scalar values" kind [datatype!] return: [series!]] [/part 1 1 /deep 2 0 /types 3 1]]
+item: find
+item: [action! 2 [{Returns the series where a value is found, or NONE.} series [series! none!] value [any-type!] /part "Limit the length of the search" length [number! series!] /only "Treat a series search value as a single value" /case "Perform a case-sensitive search" /any "TBD: Use * and ? wildcards in string searches" /with "TBD: Use custom wildcards in place of * and ?" wild [string!] /skip "Treat the series as fixed size records" size [integer!] /last "Find the last occurrence of value, from the tail" /reverse {Find the last occurrence of value, from the current index} /tail {Return the tail of the match found, rather than the head} /match {Match at current index only and return tail of match}] [/part 1 1 /only 2 0 /case 3 0 /any 4 0 /w
+ith 5 1 /skip 6 1 /last 7 0 /reverse 8 0 /tail 9 0 /match 10 0]]
+item: head
+item: [action! 1 ["Returns a series at its first index." series [series!] return: [series!]] none]
+item: head?
+item: [action! 1 ["Returns true if a series is at its first index." series [series!] return: [logic!]] none]
+item: index?
+item: [action! 1 [{Returns the current series index, relative to the head.} series [series!] return: [integer!]] none]
+item: insert
+item: [action! 2 [{Inserts value(s) at series index; returns series head.} series [series!] value [any-type!] /part "Limit the number of values inserted" length [number! series!] /only {Insert block types as single values (overrides /part)} /dup "Duplicate the inserted values" count [number!] return: [series!]] [/part 1 1 /only 2 0 /dup 3 1]]
+item: length?
+item: [action! 1 [{Returns the number of values in the series, from the current index to the tail.} series [series!] return: [integer!]] none]
+item: next
+item: [action! 1 ["Returns a series at the next index." series [series!] return: [series!]] none]
+item: pick
+item: [action! 2 ["Returns the series value at a given index." series [series!] index [integer! logic!] return: [any-type!]] none]
+item: poke
+item: [action! 3 [{Replaces the series value at a given index, and returns the new value.} series [series!] index [integer! logic!] value [any-type!] return: [series!]] none]
+item: remove
+item: [action! 1 [{Returns the series at the same index after removing a value.} series [series! none!] /part {Removes a number of values, or values up to the given series index} length [n
+umber! series!] return: [series! none!]] [/part 1 1]]
+item: select
+item: [action! 2 [{Find a value in a series and return the next value, or NONE.} series [series! none!] value [any-type!] /part "Limit the length of the search" length [number! series!] /only "Treat a series search value as a single value" /case "Perform a case-sensitive search" /any "TBD: Use * and ? wildcards in string searches" /with "TBD: Use custom wildcards in place of * and ?" wild [string!] /skip "Treat the series as fixed size records" size [integer!] /last "Find the last occurrence of value, from the tail" /reverse {Find the last occurrence of value, from the current index} return: [any-type!]] [/part 1 1 /only 2 0 /case 3 0 /any 4 0 /with 5 1 /skip 6 1 /last 7 0 /reverse 8 0]]
+item: skip
+item: [action! 2 ["Returns the series relative to the current index." series [series!] offset [integer!] return: [series!]] none]
+item: tail
+item: [action! 1 [{Returns a series at the index after its last value.} series [series!] return: [series!]] none]
+item: tail?
+item: [action! 1 ["Returns true if a series is past its last value." series [series!] return: [logic!]] none]
+item: if
+item: [intrinsic! 2 [{If condition is true, evaluate block; else return NONE.} cond [any-type!] then-blk [block!]] none]
+item: unless
+item: [intrinsic! 2 [{If condition is not true, evaluate block; else return NONE.} cond [any-type!] then-blk [block!]] none]
+item: either
+item: [intrinsic! 3 [{If condition is true, eval true-block; else eval false-blk.} cond [any-type!] true-blk [block!] false-blk [block!]] none]
+item: any
+item: [intrinsic! 1 ["Evaluates, returning at the first that is true." conds [block!]] none]
+item: all
+item: [intrinsic! 1 [{Evaluates, returning at the first that is not true.} conds [block!]] none]
+item: while
+item: [intrinsic! 2 ["Evaluates body until condition is true." cond [block!] body [block!]] none]
+item: until
+item: [intrinsic! 1 ["Evaluates body until it is true." body [block!]] none]
+item: loop
+item: [intrinsic! 2 ["Evaluates body a number of times." count [integer!] body [block!]] none]
+item: repeat
+item: [intrinsic! 3 [{Evaluates body a number of times, tracking iteration count.} 'word [word!] "Iteration counter; not local to loop" value [integer!] "Number of times to evaluate body" body [block!]] none]
+item: foreach
+item: [intrinsic! 3 ["Evaluates body for each value in a series." 'word [word! block!] "Word, or words, to set on each iteration" series [series!] body [block!]] none]
+item: forall
+item: [intrinsic! 2 ["Evaluates body for all values in a series." 'word [word!] "Word referring to series to iterate over" body [block!]] none]
+item: func
+item: [intrinsic! 2 ["Defines a function with a given spec and body." spec [block!] body [block!]] none]
+item: function
+item: [intrinsic! 2 [{Defines a function, making all words found in body local.} spec [block!] body [block!] /extern "Exclude words that follow this refinement"] [/extern 1 0]]
+item: does
+item: [intrinsic! 1 [{Defines a function with no arguments or local variables.} body [block!]] none]
+item: has
+item: [intrinsic! 2 [{Defines a function with local variables, but no arguments.} vars [block!] body [block!]] none]
+item: switch
+item: [intrinsic! 2 [{Evaluates the first block following the value found in cases.} value [any-type!] "The value to match" cases [block!] /default {Specify a default block, if value is not found in cases} case [block!] "Default block to evaluate"] [/default 1 1]]
+item: case
+item: [intrinsic! 1 [{Evaluates the block following the first true condition.} cases [block!] "Block of condition-block pairs" /all {Test all conditions, evaluating the block following each true condition}] [/all 1 0]]
+item: do
+item: [native! 1 [{Evaluates a value, returning the last evaluation result.} value [any-type!]] none]
+item: reduce
+item: [intrinsic! 1 [{Returns a copy of a block, evaluating all expressions.} value [any-type!] /into {Put results in out block, instead of creating a new block} out [any-block!] "Target block for results, when /into is used"] [/into 1 1]]
+item: compose
+item: [native! 1 ["Returns a copy of a block, evaluating only parens." value [block!] /deep "Compose nested blocks" /only {Compose nested blocks as blocks containing their values} /into {Put results in out block, instead of creating a new block} out [any-block!] "Target block for results, when /into is used"] [/deep 1 0 /only 2 0 /into 3 1]]
+item: get
+item: [intrinsic! 1 ["Returns the value a word refers to." word [word!] /any {If word has no value, return UNSET rather than causing an error} return: [any-type!]] [/any 1 0]]
+item: set
+item: [intrinsic! 2 ["Sets the value(s) one or more words refer to." word [any-word! block!] "Word or block of words to set" value [any-type!] "Value or block of values to assign to words" /any {Allow UNSET as a value rather than causing an error} return: [any-type!]] [/any 1 0]]
+item: print
+item: [native! 1 ["Outputs a value followed by a newline." value [any-type!]] none]
+item: prin
+item: [native! 1 ["Outputs a value." value [any-type!]] none]
+item: equal?
+item: [native! 2 ["Returns true if two values are equal." value1 [any-type!] value2 [any-type!]] none]
+item: not-equal?
+item: [native! 2 ["Returns true if two values are not equal." value1 [any-type!] value2 [any-type!]] none]
+item: strict-equal?
+item: [native! 2 [{Returns true if two values are equal, and also the same datatype.} value1 [any-type!] value2 [any-type!]] none]
+item: lesser?
+item: [native! 2 [{Returns true if the first value is less than the second.} value1 [any-type!] value2 [any-type!]] none]
+item: greater?
+item: [native! 2 [{Returns true if the first value is greater than the second.} value1 [any-type!] value2 [any-type!]] none]
+item: lesser-or-equal?
+item: [native! 2 [{Returns true if the first value is less than or equal to the second.} value1 [any-type!] value2 [any-type!]] none]
+item: greater-or-equal?
+item: [native! 2 [{Returns true if the first value is greater than or equal to the second.} value1 [any-type!] value2 [any-type!]] none]
+item: same?
+item: [native! 2 ["Returns true if two values have the same identity." value1 [any-type!] value2 [any-type!]] none]
+item: not
+item: [native! 1 [{Returns the negation (logical complement) of a value.} value [any-type!]] none]
+item: halt
+item: [native! 0 ["Stops evaluation."] none]
+item: type?
+item: [native! 1 ["Returns the datatype of a value." value [any-type!] /word "Return a word value, rather than a datatype value"] [/word 1 0]]
+item: load
+item: [native! 1 [{Returns a value or block of values by reading and evaluating a source.} source [file! url! string! binary! block!] /header "TBD: Include Red header as a loaded value" /all "TBD: Don't evaluate Red header" /type "TBD:" /into {Put results in out block, instead of creating a new block} out [block!] "Target block for results, when /into is used"] [/header 1 0 /all 2 0 /type 3 0 /into 4 1]]
+item: stats
+item: [native! 0 ["Returns interpreter statistics." /show "TBD:" /info "Output formatted results" return: [integer! block!]] [/show 1 0 /info 2 0]]
+item: bind
+item: [native! 2 [word [block! any-word!] context [any-word! any-object!] /copy return: [block! any-word!]] [/copy 1 0]]
+item: +
+item: [op! 2 ["Returns the sum of the two values." value1 [number!] value2 [number!] return: [number!]] none]
+item: -
+item: [op! 2 ["Returns the difference between two values." value1 [number!] value2 [number!] return: [number!]] none]
+item: *
+item: [op! 2 ["Returns the product of two values." value1 [number!] value2 [number!] return: [number!]] none]
+item: /
+item: [op! 2 ["Returns the quotient of two values." value1 [number!] "The dividend (numerator)." value2 [number!] "The divisor (denominator)." return: [number!]] none]
+item: =
+item: [op! 2 ["Returns true if two values are equal." value1 [any-type!] value2 [any-type!]] none]
+item: <>
+item: [op! 2 ["Returns true if two values are not equal." value1 [any-type!] value2 [any-type!]] none]
+item: ==
+item: [op! 2 [{Returns true if two values are equal, and also the same datatype.} value1 [any-type!] value2 [any-type!]] none]
+item: =?
+item: [op! 2 ["Returns true if two values have the same identity." value1 [any-type!] value2 [any-type!]] none]
+item: <
+item: [op! 2 [{Returns true if the first value is less than the second.} value1 [any-type!] value2 [any-type!]] none]
+item: >
+item: [op! 2 [{Returns true if the first value is greater than the second.} value1 [any-type!] value2 [any-type!]] none]
+item: <=
+item: [op! 2 [{Returns true if the first value is less than or equal to the second.} value1 [any-type!] value2 [any-type!]] none]
+item: >=
+item: [op! 2 [{Returns true if the first value is greater than or equal to the second.} value1 [any-type!] value2 [any-type!]] none]
+item: quit-return
+item: [routine! 1 [{Stops evaluation and exits the program with a given status.} status [integer!] "Process termination value to return"] none]
+item: quit
+item: [function! 0 ["Stops evaluation and exits the program." /return status [integer!] "Return an exit status"] [/return 1 1]]
+item: empty?
+item: [function! 1 ["Returns true if a series is at its tail." series [series!] return: [logic!]] none]
+item: ??
+item: [function! 1 ["Prints a word and the value it refers to (molded)." 'value [word!]] none]
+item: probe
+item: [function! 1 ["Returns a value after printing its molded form." value] none]
+item: quote
+item: [function! 1 [:value] none]
+item: first
+item: [function! 1 ["Returns the first value in a series." s [series!]] none]
+item: second
+item: [function! 1 ["Returns the second value in a series." s [series!]] none]
+item: third
+item: [function! 1 ["Returns the third value in a series." s [series!]] none]
+item: fourth
+item: [function! 1 ["Returns the fourth value in a series." s [series!]] none]
+item: fifth
+item: [function! 1 ["Returns the fifth value in a series." s [series!]] none]
+item: last
+item: [function! 1 ["Returns the last value in a series." s [series!]] none]
+item: action?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: block?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: char?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: datatype?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: file?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: function?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: get-path?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: get-word?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: integer?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: issue?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: lit-path?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: lit-word?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: logic?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: native?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: none?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: op?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: paren?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: path?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: refinement?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: set-path?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: set-word?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: string?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: unset?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: word?
+item: [function! 1 ["Returns true if the value is this type." value [any-type!]] none]
+item: any-series?
+item: [function! 1 [value] none]
+item: spec-of
+item: [function! 1 [{Returns the spec of a value that supports reflection.} value] none]
+item: body-of
+item: [function! 1 [{Returns the body of a value that supports reflection.} value] none]
+item: system
+item: [function! 0 ["Returns information about the interpreter." /version "Return the system version" /words "Return a block of global words available" /platform "Return a word identifying the operating system"] [/version 1 0 /words 2 0 /platform 3 0]]
+item: replace
+item: [function! 3 [series [series!] pattern value /all /local pos len] [/all 1 0]]
+item: zero?
+item: [function! 1 [value [number!]] none]
+
+
+
+
+
+----- comp-source 的 keywords
+item: if
+item: [comp-if]
+item: unless
+item: [comp-unless]
+item: either
+item: [comp-either]
+item: any
+item: [comp-any]
+item: all
+item: [comp-all]
+item: while
+item: [comp-while]
+item: until
+item: [comp-until]
+item: loop
+item: [comp-loop]
+item: repeat
+item: [comp-repeat]
+item: foreach
+item: [comp-foreach]
+item: forall
+item: [comp-forall]
+item: func
+item: [comp-func]
+item: function
+item: [comp-function]
+item: does
+item: [comp-does]
+item: has
+item: [comp-has]
+item: switch
+item: [comp-switch]
+item: case
+item: [comp-case]
+item: reduce
+item: [comp-reduce]
+item: get
+item: [comp-get]
+item: set
+item: [comp-set]
+
+
