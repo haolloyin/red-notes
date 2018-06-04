@@ -106,7 +106,7 @@ _context: context [
 			s  	  [series!]
 			id	  [integer!]
 	][
-		ctx: TO_CTX(global-ctx)
+		ctx: TO_CTX(global-ctx) ;- global-ctx 是一个 node!
 		id: find-word ctx sym case?
 		s: as series! ctx/symbols/value
 		
@@ -122,7 +122,7 @@ _context: context [
 		s: as series! ctx/symbols/value
 		word: as red-word! alloc-tail s
 		word/header: TYPE_WORD							;-- implicit reset of all header flags
-		word/ctx: 	 global-ctx
+		word/ctx: 	 global-ctx ;- red-word!/ctx 保存了指向 red-context! 的指针
 		word/symbol: sym
 		s: as series! ctx/symbols/value
 
@@ -380,12 +380,12 @@ _context: context [
 		#if debug? = yes [if verbose > 0 [print-line "_context/create"]]
 		
 		if zero? slots [slots: 1]
-		node: alloc-cells 2
-		cell: as red-context! alloc-tail as series! node/value
+		node: alloc-cells 2 ;- 只需要两个 16 bytes 的 cell，alloc-cells 会分配 series-buffer!
+		cell: as red-context! alloc-tail as series! node/value ;- 一个用作 red-context!，看 TO_CTX(node) 宏
 		cell/header: TYPE_CONTEXT						;-- implicit reset of all header flags	
 		cell/symbols: alloc-series slots 16 0			;-- force offset at head of buffer
 		cell/self: node
-		alloc-tail as series! node/value				;-- allocate a slot for obj/func back-reference
+		alloc-tail as series! node/value				;-- allocate a slot for obj/func back-reference ;- TODO 另一个用在这里
 		
 		if self? [cell/header: cell/header or flag-self-mask]
 
@@ -395,7 +395,7 @@ _context: context [
 		][
 			cell/values: alloc-unset-cells slots
 		]
-		node
+		node ;- 返回的是 node! 指针，不是 red-context!
 	]
 	
 	make: func [

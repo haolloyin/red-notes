@@ -192,7 +192,7 @@ _series: context [
 		state: as red-logic! ser
 
 		state/header: TYPE_LOGIC
-		state/value:  zero? ser/head
+		state/value:  zero? ser/head ;- head = 0 则指向第一个元素
 		as red-value! state
 	]
 
@@ -209,6 +209,25 @@ _series: context [
 		state: as red-logic! ser
 
 		s: GET_BUFFER(ser)
+
+        ;-print-line [
+        ;-    "series.reds/tail?: >> "
+        ;-    "GET_UNIT(s): " GET_UNIT(s)       ;- 掩码运算得到前导 0 的个数，例如 16 = 10000，前导 0 有 32 - 5 = 27
+        ;-    ", log-b: " (log-b GET_UNIT(s))   ;- 汇编实现 31 - 27 = 4 位
+        ;-    ", ser/head: " ser/head
+        ;-    ", ser/head << (log-b GET_UNIT(s)): " (ser/head << (log-b GET_UNIT(s)))
+        ;-    ", s/offset: " s/offset ", as byte-ptr!: " (as byte-ptr! s/offset)
+        ;-    ", out: " (as byte-ptr! s/offset) + (ser/head << (log-b GET_UNIT(s)))
+        ;-    ", s/tail: " as byte-ptr! s/tail
+        ;-]
+
+        ;- log-b 是获取 buffer 所管理的单元的大小，用汇编实现，见 ARM.r 1136行，
+        ;- 用 31 减去前导零的个数，得到 1 的个数 n，再左移 n 位即乘以 buffer 所管理的单元大小
+
+        ;- head 是从 0 开始偏移，指向第 N 个单元
+        ;- head 左移 4 位相当于乘以单元的大小，得到偏移到第 N 个单元之后的地址增量
+        ;- series-buffer!/offset 是基地址，加上地址增量后是目标地址
+        ;- 和 series-buffer!/tail 对比就知道有没越界
 
 		state/header: TYPE_LOGIC
 		state/value:  (as byte-ptr! s/offset) + (ser/head << (log-b GET_UNIT(s))) >= as byte-ptr! s/tail
@@ -227,7 +246,7 @@ _series: context [
 		index: as red-integer! ser
 
 		index/header: TYPE_INTEGER
-		index/value:  ser/head + 1
+		index/value:  ser/head + 1 ;- head 是基于 0，返回的是基于 1 的下标
 		as red-value! index
 	]
 
@@ -250,8 +269,8 @@ _series: context [
 		#if debug? = yes [if verbose > 0 [print-line "series/at"]]
 
 		ser: as red-series! stack/arguments
-		ser/head: get-position 1 ;- at [1 2 3] 1 = [1 2 3]
-		as red-value! ser
+		ser/head: get-position 1 ;- at [1 2 3] 1 = [1 2 3]，每次调用后 head 会被改变
+		as red-value! ser ;- 返回本身
 	]
 
 	back: func [
@@ -262,7 +281,7 @@ _series: context [
 		#if debug? = yes [if verbose > 0 [print-line "series/back"]]
 		
 		ser: as red-series! stack/arguments
-		if ser/head >= 1 [ser/head: ser/head - 1]
+		if ser/head >= 1 [ser/head: ser/head - 1] ;- head 减 1
 		as red-value! ser
 	]
 
@@ -271,8 +290,8 @@ _series: context [
 	][
 		#if debug? = yes [if verbose > 0 [print-line "series/next"]]
 
-		rs-skip as red-series! stack/arguments 1
-		stack/arguments
+		rs-skip as red-series! stack/arguments 1 ;- head + 1
+		stack/arguments ;- 返回本身
 	]
 
 	skip: func [
@@ -283,8 +302,8 @@ _series: context [
 		#if debug? = yes [if verbose > 0 [print-line "series/skip"]]
 
 		ser: as red-series! stack/arguments
-		ser/head: get-position 0 ;- skip [1 2 3] 1 = [2 3]
-		as red-value! ser
+		ser/head: get-position 0 ;- skip [1 2 3] 1 = [2 3]，head 被改变了
+		as red-value! ser ;- 返回本身
 	]
 
 	head: func [
@@ -318,7 +337,7 @@ _series: context [
 	pick: func [
 		ser		[red-series!]
 		index	[integer!]
-		boxed	[red-value!]
+		boxed	[red-value!] ;- 没用上
 		return:	[red-value!]
 		/local
 			char   [red-char!]
@@ -337,13 +356,13 @@ _series: context [
 		if negative? index [offset: offset + 1]
 
 		either any [
-			zero? index
-			offset < 0
+			zero? index ;- 下标基于 1，不能传入 0
+			offset < 0  ;- 下标不能小于 0，不能越界
 			offset >= ((as-integer s/tail - s/offset) >> (log-b unit))
 		][
 			none-value
 		][
-			p1: (as byte-ptr! s/offset) + (offset << (log-b unit))
+			p1: (as byte-ptr! s/offset) + (offset << (log-b unit)) ;- 基地址 + 偏移个数 * 单元大小
 			switch TYPE_OF(ser) [
 				TYPE_BLOCK								;@@ any-block?
 				TYPE_HASH
@@ -352,7 +371,7 @@ _series: context [
 				TYPE_PATH
 				TYPE_GET_PATH
 				TYPE_SET_PATH
-				TYPE_LIT_PATH [s/offset + offset]
+				TYPE_LIT_PATH [s/offset + offset] ;- 基地址指针加 N 偏移
 				TYPE_VECTOR [
 					vec: as red-vector! ser
 					vector/get-value p1 unit vec/type
@@ -370,7 +389,7 @@ _series: context [
 
 	;--- Modifying actions ---
 	
-	move: func [
+	move: func [ ;- 从 origin 中把 N 个元素插入到 target 中，两个都是基于当前 head
 		origin   [red-series!]
 		target   [red-series!]
 		part-arg [red-value!]
@@ -403,20 +422,22 @@ _series: context [
 		if src = tail [return as red-value! target]
 		
 		part: unit
-		items: 1
+		items: 1 ;- 默认只移动一个单元
 
+        ;; #define OPTION?(ref-ptr)	(ref-ptr > stack/arguments)	;-- a bit inelegant, but saves a lot of code
+        ;; 看编译得到的 R/S IR part-arg 是 stack/arguments -1（看 runtime/actions.reds 的 move* 实现）
 		if OPTION?(part-arg) [
 			int: as red-integer! part-arg
 			part: int/value
 			if part <= 0 [return as red-value! target]	;-- early exit if negative /part index
-			limit: (as-integer tail - src) >> log-b unit
+			limit: (as-integer tail - src) >> log-b unit ;- origin 当前最多可以移动的个数
 			if part > limit [part: limit]
 			items: part
-			part: part << (log-b unit)
+			part: part << (log-b unit) ;- 左移变成内存大小
 		]
 		
 		type1: TYPE_OF(origin)
-		either origin/node = target/node [				;-- same series case
+		either origin/node = target/node [				;-- same series case ;- 同一个 series
 			dst: (as byte-ptr! s/offset) + (target/head << (log-b unit))
 			if src = dst [return as red-value! target]	;-- early exit if no move is required
 			if all [dst > src dst <> tail part > (as-integer tail - dst)][
@@ -449,7 +470,7 @@ _series: context [
 			]
 
 			index: target/head - items
-		][												;-- different series case
+		][												;-- different series case ;- 不同的 series
 			type2: TYPE_OF(target)
 			if any [
 				all [ANY_BLOCK?(type1)  ANY_STRING?(type2)]
@@ -543,8 +564,8 @@ _series: context [
 			n		[integer!]
 			cnt		[integer!]
 	][
-		cnt: 1
-		if OPTION?(dup-arg) [
+		cnt: 1 ;- 默认只修改当前 head 位置的一个元素
+		if OPTION?(dup-arg) [ ;- 有 /dup 参数，即用相同的 value 连续修改 dup 次
 			int: as red-integer! dup-arg
 			cnt: int/value
 			if cnt < 1 [return ser]
@@ -554,12 +575,12 @@ _series: context [
 		s:    GET_BUFFER(ser)
 		unit: GET_UNIT(s)
 		head: ser/head
-		size: (as-integer s/tail - s/offset) >> (log-b unit)
+		size: (as-integer s/tail - s/offset) >> (log-b unit) ;- buffer 的元素个数
 
 		type: TYPE_OF(ser)
-		blk?: ANY_BLOCK?(type)
+		blk?: ANY_BLOCK?(type) ;- ser 是 red-block! 类型
 
-		values?: either all [only? blk?][no][
+		values?: either all [only? blk?][no][ ;- /only 参数把 block 当作一个 value 来使用
 			n: TYPE_OF(value)
 			ANY_BLOCK?(n)
 		]
@@ -717,7 +738,7 @@ _series: context [
 		if size <= 0 [return as red-value! ser]    ;-- early exit if nothing to clear
 
 		ownership/check as red-value! ser words/_clear null ser/head size
-		s/tail: as cell! (as byte-ptr! s/offset) + (ser/head << (log-b GET_UNIT(s)))
+		s/tail: as cell! (as byte-ptr! s/offset) + (ser/head << (log-b GET_UNIT(s))) ;- 删掉之后，tail 重置为 head 的地址
 		ownership/check as red-value! ser words/_cleared null ser/head 0
 		as red-value! ser
 	]
@@ -726,7 +747,7 @@ _series: context [
 		ser		[red-series!]
 		index	[integer!]
 		data	[red-value!]
-		boxed	[red-value!]
+		boxed	[red-value!] ;- 没用上
 		return:	[red-value!]
 		/local
 			s	   [series!]
@@ -785,7 +806,7 @@ _series: context [
 		data
 	]
 
-	remove: func [
+	remove: func [ ;- 删除当前 head 及之后的元素
 		ser	 	 [red-series!]
 		part-arg [red-value!]							;-- null if no /part
 		return:	 [red-series!]
@@ -810,7 +831,7 @@ _series: context [
 		part: unit
 		items: 1
 
-		if part-arg <> null [
+		if part-arg <> null [ ;- 有 /part 参数时要删除多个元素，需要重新计算 part
 			part: either TYPE_OF(part-arg) = TYPE_INTEGER [
 				int: as red-integer! part-arg
 				int/value
@@ -826,7 +847,7 @@ _series: context [
 			]
 			if part <= 0 [return ser]					;-- early exit if negative /part index
 			items: part
-			part: part << (log-b unit)
+			part: part << (log-b unit) ;- 要删掉的多个元素的总大小
 		]
 		ownership/check as red-value! ser words/_remove null ser/head items
 		
@@ -834,7 +855,7 @@ _series: context [
 			move-memory
 				head
 				head + part
-				as-integer tail - (head + part)
+				as-integer tail - (head + part) ;- 为什么不直接写 part？因为有可能越界
 			s/tail: as red-value! tail - part
 
 			if TYPE_OF(ser) = TYPE_HASH [

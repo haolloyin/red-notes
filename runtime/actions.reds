@@ -830,7 +830,7 @@ actions: context [
 		dup		[integer!]
 		return: [red-series!]
 	][
-		change
+		change ;- change 需要 5 个参数，后三个是 /refinement，有趣的是，如果未指明，这些 /refinement 是 -1，结合 OPTION? 宏来判断是否有指定
 			as red-series! stack/arguments
 			stack/arguments + 1
 			stack/arguments + part
@@ -1113,7 +1113,7 @@ actions: context [
 		stack/set-last move
 			as red-series!  stack/arguments
 			as red-series!  stack/arguments + 1
-			as red-integer! stack/arguments + part
+			as red-integer! stack/arguments + part ;- 如果 part 是负数，OPTION? 宏判断这个参数就小于 stack/arguments
 	]
 	
 	move: func [
@@ -1249,7 +1249,7 @@ actions: context [
 		/local
 			part-arg [red-value!]
 	][
-		part-arg: either part < 0 [null][stack/arguments + part]
+		part-arg: either part < 0 [null][stack/arguments + part] ;- 如果没有 /part 参数，那么 part-arg 为 null
 		remove as red-series! stack/arguments part-arg
 	]
 	

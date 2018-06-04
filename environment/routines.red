@@ -125,3 +125,31 @@ write-clipboard: routine [data [string!]][
 write-stdout: routine [str [string!]][			;-- internal use only
 	simple-io/write null as red-value! str null null no no no
 ]
+
+desc: routine [
+    word [any-type!]
+    /local
+        ser [red-series!]
+        buf [series-buffer!]
+        items [integer!]
+][
+    print ["addr:" word ", type:" TYPE_OF(word)]
+
+    ser: as red-series! word
+
+    switch TYPE_OF(word) [
+        TYPE_BLOCK
+        TYPE_STRING [
+            buf: GET_BUFFER(ser)
+            items: (as-integer buf/tail - buf/offset) >> (log-b GET_UNIT(buf))
+            print [
+                ", node->" buf/node/value ", buf:" buf ", items:" items ", head:" ser/head 
+                ", /offset:" buf/offset ", /tail:" buf/tail ", current:" buf/offset + ser/head " "
+            ]
+        ]
+        default [
+            print " "
+        ]
+    ]
+]
+

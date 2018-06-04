@@ -103,17 +103,17 @@ symbol: context [
 		str/node:	unicode/load-utf8 s system/words/length? s
 		str/header: TYPE_SYMBOL							;-- make hashtable happy
 		str/head:	0
-		id: search str
+		id: search str ;- 查找 symbol 是否已存在，返回下标作为 id
 
-		if positive? id [return id]
+		if positive? id [return id] ;- symbol 已存在，返回 id
 		
-		sym: as red-symbol! ALLOC_TAIL(symbols)	
+		sym: as red-symbol! ALLOC_TAIL(symbols)	;- 不存在，追加到 symbols 全局变量中
 		sym/header: TYPE_SYMBOL							;-- implicit reset of all header flags
 		sym/node:   str/node
 		sym/cache:  duplicate s
 		sym/alias:  either zero? id [-1][0 - id]		;-- -1: no alias, abs(id)>0: alias id
-		_hashtable/put table as red-value! sym
-		block/rs-length? symbols
+		_hashtable/put table as red-value! sym ;- 写入 hash 表
+		block/rs-length? symbols ;- 返回在 symbols 中的下标
 	]
 	
 	get: func [

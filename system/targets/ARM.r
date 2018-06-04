@@ -1132,8 +1132,9 @@ make-profilable make target-class [
 	]
 
 	emit-log-b: func [type][
-		emit-i32 #{e16f0f10}						;-- CLZ r0, r0
-		emit-i32 #{e260001f}						;-- RSB r0, r0, #31
+        ;- See: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204ic/Cihcjfjg.html
+		emit-i32 #{e16f0f10}						;-- CLZ r0, r0      ;- 计算前导零的个数，结果存到 r0
+		emit-i32 #{e260001f}						;-- RSB r0, r0, #31 ;- 反向减法，31 - r0
 	]
 
 	emit-pop-float: func [idx [integer!] /with type [block!]][

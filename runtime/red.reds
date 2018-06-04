@@ -129,7 +129,7 @@ red: context [
 	_root:	 	declare red-block!						;-- statically alloc root cell for bootstrapping
 	root:	 	as red-block! 0							;-- root block
 	symbols: 	as red-block! 0 						;-- symbols table
-	global-ctx: as node! 0								;-- global context
+	global-ctx: as node! 0								;-- global context ;- global-ctx 是一个 node!
 	verbosity:  0
 
 	;-- Booting... --
@@ -201,7 +201,7 @@ red: context [
 
 		root:	 	block/make-in null 2000	
 		symbols: 	block/make-in root 1000
-		global-ctx: _context/create 1000 no no
+		global-ctx: _context/create 1000 no no ;- global-ctx 是一个 node!
 
 		case-folding/init
 		symbol/table: _hashtable/init 1000 symbols HASH_TABLE_SYMBOL 1

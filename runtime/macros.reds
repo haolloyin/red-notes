@@ -308,7 +308,7 @@ Red/System [
 #define GET_TUPLE_ARRAY(tp) [(as byte-ptr! tp) + 4]
 #define SET_TUPLE_SIZE(t n) [t/header: t/header and FF87FFFFh or (n << 19)]
 #define GET_BUFFER(series)  (as series! series/node/value)
-#define GET_UNIT(series)	(series/flags and get-unit-mask)
+#define GET_UNIT(series)	(series/flags and get-unit-mask) ;- 掩码运算得到前导 0 的个数
 #define ALLOC_TAIL(series)	[alloc-at-tail series]
 #define FLAG_SET?(flag)		(flags and flag <> 0)
 #define OPTION?(ref-ptr)	(ref-ptr > stack/arguments)	;-- a bit inelegant, but saves a lot of code
@@ -316,6 +316,8 @@ Red/System [
 #define EQUAL_SYMBOLS?(a b) ((symbol/resolve a) = (symbol/resolve b))
 #define EQUAL_WORDS?(a b) 	((symbol/resolve a/symbol) = (symbol/resolve b/symbol))
 #define TO_CTX(node)		(as red-context! ((as series! node/value) + 1))
+
+;- node 是指针，node/value 取到指向的地址，是 series-buffer!，+1 是偏移掉 series-buffer! 自身到 cell 的地址，第一个刚好是 red-context! 结构
 #define GET_CTX(obj)		(as red-context! ((as series! obj/ctx/value) + 1))
 #define FLAG_NOT?(s)		(s/flags and flag-bitset-not <> 0)
 #define SET_RETURN(value)	[stack/set-last as red-value! value]
