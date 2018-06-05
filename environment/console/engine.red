@@ -131,7 +131,7 @@ system/console: context [
 	try-do: func [code /local result return: [any-type!]][
 		running?: yes
 		set/any 'result try/all [
-			either 'halt-request = set/any 'result catch/name code 'console [
+			either 'halt-request = set/any 'result catch/name code 'console [ ;- catch 会运行 block
 				print "(halted)"						;-- return an unset value
 			][
 				:result
@@ -162,7 +162,7 @@ system/console: context [
 	]
 
 	do-command: function [/local result err][
-		if error? code: try [load/all buffer][print code]
+		if error? code: try [load/all buffer][print code] ;- load 把字符串转成 block
 
 		unless any [error? code tail? code][
 			set/any 'result try-do code
@@ -191,6 +191,7 @@ system/console: context [
 	eval-command: function [line [string!] /extern cue mode][
 		if mode = 'mono [change/dup count 0 3]			;-- reset delimiter counters to zero
 		
+        ;- print ["line:{" line "}  ,cue:" cue " ,mode:" mode " ,count:" count]
 		if any [not tail? line mode <> 'mono][
 			either all [not empty? line escape = last line][
 				cue: none
@@ -201,6 +202,7 @@ system/console: context [
 				cnt: count-delimiters line
 				append buffer line
 				append buffer lf						;-- needed for multiline modes
+                ;- print ["line:{" line "}  ,cue:" cue " ,mode:" mode " ,count:" count " ,buffer:" buffer]
 
 				switch mode [
 					block  [if cnt/1 <= 0 [switch-mode cnt]]
@@ -219,11 +221,11 @@ system/console: context [
 				"Type HELP for starting information." lf
 			]
 		]
-		forever [
-			eval-command ask any [
+		forever [ ;- 主循环
+			eval-command ask any [ ;- 用户输入作为参数
 				cue
 				all [string? set/any 'p do [prompt] :p]
-				form :p
+				form :p ;- 打印提示符
 			]
 		]
 	]

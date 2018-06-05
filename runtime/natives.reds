@@ -556,7 +556,7 @@ natives: context [
 				]
 				TYPE_STRING [
 					str: as red-string! arg
-					#call [system/lexer/transcode str none no]
+					#call [system/lexer/transcode str none no] ;- #call 是调用 Red 函数的宏，返回值放在 stack/arguments 里
 					DO_EVAL_BLOCK
 				]
 				TYPE_URL 

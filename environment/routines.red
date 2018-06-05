@@ -126,6 +126,8 @@ write-stdout: routine [str [string!]][			;-- internal use only
 	simple-io/write null as red-value! str null null no no no
 ]
 
+;- console debug functions
+
 desc: routine [
     word [any-type!]
     /local

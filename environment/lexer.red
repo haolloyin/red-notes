@@ -339,7 +339,7 @@ system/lexer: context [
 		count?:	yes										;-- if TRUE, lines counter is enabled
 		old-line: line: 1
 
-		append/only stack any [dst make block! 200]
+		append/only stack any [dst make block! 200] ;- 用 dst 或申请 200 个元素的 block
 
 		make-string: [
 			new: make type len: (index? e) - index? s
