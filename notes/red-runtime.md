@@ -71,10 +71,10 @@ red-040.exe -c -v 3 --red-only test.red > v3.reds
 
 另外，要是你有兴趣，我还陆续写了几篇关于相关的 wiki：  
 
-1. [从 Red 编译成 Red System 能学到什么](https://github.com/red/red/wiki/Compile-Red-code-to-Red-System-and-learn-something)
-2. [怎样把 Red 编译成 Red/System 代码](https://github.com/red/red/wiki/Compile-Red-to-Red-System)
-3. [Red 的编译流程与 Red 运行时入口](https://github.com/red/red/wiki/Red-compile-process-and-build-its-runtime)
-4. 官网的《[Red/System compiler overview](http://www.red-lang.org/2011/05/redsystem-compiler-overview.html)》的 [中文翻译](https://github.com/red/red/wiki/Red-System-compiler-overview-chinese-translation)
+1. [从 Red 编译成 Red System 能学到什么](https://github.com/red/red/wiki/%5Bzh-hans%5D-Compile-Red-code-to-Red-System-and-learn-something)
+2. [怎样把 Red 编译成 Red/System 代码](https://github.com/red/red/wiki/%5Bzh-hans%5D-Compile-Red-to-Red-System)
+3. [Red 的编译流程与 Red 运行时入口](https://github.com/red/red/wiki/%5BDOC%5D-Red-compile-process-and-build-its-runtime)
+4. 官网的《[Red/System compiler overview](http://www.red-lang.org/2011/05/redsystem-compiler-overview.html)》的 [中文翻译](https://github.com/red/red/wiki/%5Bzh-hans%5D-Red-System-compiler-overview-chinese-translation)
 
 
 
